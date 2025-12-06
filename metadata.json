@@ -1,0 +1,7 @@
+{
+  "name": "Christmas Tree: Gesture Controlled Particles",
+  "description": "A cinematic 3D particle Christmas tree controlled by real-time hand gestures using MediaPipe and WebGL.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
