@@ -12,7 +12,7 @@ interface SceneProps {
 }
 
 const Particles = ({ gestureRef, shape, color }: SceneProps) => {
-  const count = 5000;
+  const count = 5500; // Total particle count
   const meshRef = useRef<THREE.Points>(null);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
 
@@ -33,10 +33,12 @@ const Particles = ({ gestureRef, shape, color }: SceneProps) => {
     ];
 
     if (shape === 'tree') {
+      // 1. TREE BODY
+      // Use full count for the tree, no star reservation
       for (let i = 0; i < count; i++) {
         // Standard cone distribution
-        // CLIPPED HEIGHT: Avoid exact top tip (y=5, radius=0) to prevent black spot singularity
-        const y = Math.random() * 9.5 - 5; // -5 to 4.5
+        // CLIPPED HEIGHT: Avoid exact top tip (y=5) to prevent singularity
+        const y = Math.random() * 9.5 - 5.0; // -5.0 to 4.5
         // Radius calculation
         const radius = (5 - y) * 0.45;
         const angle = i * 0.5; // Spiral
@@ -47,71 +49,48 @@ const Particles = ({ gestureRef, shape, color }: SceneProps) => {
         positions[i * 3 + 2] = r * Math.sin(angle);
 
         // Ornament Logic
-        // Slightly reduced probability to avoid clutter, kept distinctive size
-        const isSurface = r > radius * 0.8; 
-        if (isSurface && Math.random() < 0.08) {
+        const isSurface = r > radius * 0.85; 
+        if (isSurface && Math.random() < 0.06) {
             const ornamentColor = ornamentColors[Math.floor(Math.random() * ornamentColors.length)];
             colors[i * 3] = ornamentColor.r;
             colors[i * 3 + 1] = ornamentColor.g;
             colors[i * 3 + 2] = ornamentColor.b;
-            sizes[i] = Math.random() * 1.5 + 2.5; // Large ornaments
+            sizes[i] = Math.random() * 1.5 + 3.0; // Large ornaments
         } else {
             colors[i * 3] = baseColorObj.r;
             colors[i * 3 + 1] = baseColorObj.g;
             colors[i * 3 + 2] = baseColorObj.b;
-            // Scale leaf size by height slightly to avoid clustering at top
+            // Scale leaf size by height slightly
             const heightFactor = (y + 5) / 10; 
-            sizes[i] = (Math.random() * 0.6 + 0.4) * (1.0 - heightFactor * 0.3); 
+            sizes[i] = (Math.random() * 0.6 + 0.4) * (1.0 - heightFactor * 0.2); 
         }
       }
+
     } else if (shape === 'sphere') {
-      for (let i = 0; i < count; i++) {
-        const r = 4 * Math.cbrt(Math.random());
-        const theta = Math.random() * 2 * Math.PI;
-        const phi = Math.acos(2 * Math.random() - 1);
-        
-        positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-        positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-        positions[i * 3 + 2] = r * Math.cos(phi);
-
-        colors[i * 3] = baseColorObj.r;
-        colors[i * 3 + 1] = baseColorObj.g;
-        colors[i * 3 + 2] = baseColorObj.b;
-        sizes[i] = Math.random() * 0.8 + 0.5;
-      }
-    } else if (shape === 'star') {
-        for (let i = 0; i < count; i++) {
-            const r = Math.pow(Math.random(), 2) * 6;
-             const theta = Math.random() * 2 * Math.PI;
-             const phi = Math.acos(2 * Math.random() - 1);
-             positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-             positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-             positions[i * 3 + 2] = r * Math.cos(phi);
-             
-             if (Math.random() > 0.8) {
-                 positions[i * 3] *= 2.5; 
-             }
-             
-             colors[i * 3] = baseColorObj.r;
-             colors[i * 3 + 1] = baseColorObj.g;
-             colors[i * 3 + 2] = baseColorObj.b;
-             sizes[i] = Math.random() * 0.8 + 0.5;
-        }
-    } else if (shape === 'flower') {
+        // Fallback for other shapes just to be safe (simplified)
          for (let i = 0; i < count; i++) {
-             const u = Math.random() * Math.PI * 2;
-             const v = Math.random() * Math.PI;
-             const r = 3 + Math.sin(5 * u) * Math.sin(5 * v);
-             
-             positions[i * 3] = r * Math.sin(v) * Math.cos(u);
-             positions[i * 3 + 1] = r * Math.cos(v);
-             positions[i * 3 + 2] = r * Math.sin(v) * Math.sin(u);
+            const r = 4 * Math.cbrt(Math.random());
+            const theta = Math.random() * 2 * Math.PI;
+            const phi = Math.acos(2 * Math.random() - 1);
+            
+            positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+            positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+            positions[i * 3 + 2] = r * Math.cos(phi);
 
-             colors[i * 3] = baseColorObj.r;
-             colors[i * 3 + 1] = baseColorObj.g;
-             colors[i * 3 + 2] = baseColorObj.b;
-             sizes[i] = Math.random() * 0.8 + 0.5;
-         }
+            colors[i * 3] = baseColorObj.r;
+            colors[i * 3 + 1] = baseColorObj.g;
+            colors[i * 3 + 2] = baseColorObj.b;
+            sizes[i] = Math.random() * 0.8 + 0.5;
+        }
+    } else {
+         // Default filler
+          for (let i = 0; i < count; i++) {
+             positions[i * 3] = (Math.random() - 0.5) * 10;
+             positions[i * 3 + 1] = (Math.random() - 0.5) * 10;
+             positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
+             colors[i * 3] = 1; colors[i * 3 + 1] = 1; colors[i * 3 + 2] = 1;
+             sizes[i] = 1;
+          }
     }
 
     for (let i = 0; i < count; i++) {
@@ -129,13 +108,27 @@ const Particles = ({ gestureRef, shape, color }: SceneProps) => {
 
     if (materialRef.current) {
         materialRef.current.uniforms.uTime.value = clock.getElapsedTime();
-        materialRef.current.uniforms.uCollapse.value = THREE.MathUtils.lerp(materialRef.current.uniforms.uCollapse.value, collapseFactor, 0.1);
-        materialRef.current.uniforms.uPinch.value = THREE.MathUtils.lerp(materialRef.current.uniforms.uPinch.value, pinchDistance, 0.1);
+        // Faster lerp for responsiveness (0.1 -> 0.2)
+        materialRef.current.uniforms.uCollapse.value = THREE.MathUtils.lerp(
+            materialRef.current.uniforms.uCollapse.value, 
+            collapseFactor, 
+            0.2
+        );
+        materialRef.current.uniforms.uPinch.value = THREE.MathUtils.lerp(
+            materialRef.current.uniforms.uPinch.value, 
+            pinchDistance, 
+            0.2
+        );
     }
 
     if (meshRef.current) {
         const targetRot = rotationX * 1.5;
-        meshRef.current.rotation.y = THREE.MathUtils.lerp(meshRef.current.rotation.y, targetRot, 0.05);
+        // Faster rotation lerp (0.05 -> 0.12)
+        meshRef.current.rotation.y = THREE.MathUtils.lerp(
+            meshRef.current.rotation.y, 
+            targetRot, 
+            0.12
+        );
     }
   });
 
@@ -188,10 +181,8 @@ export const Experience = (props: SceneProps) => {
       <EffectComposer disableNormalPass>
         {/* 
            Bloom Logic Update:
-           - Threshold: Increased to 0.65 (was 0.25). This ensures only the very bright core and ornaments glow,
-             preventing the "washed out" fog effect on the green leaves.
-           - Intensity: 1.0 makes the glow pop where it exists.
-           - Smoothing: 0.9 provides a high quality falloff.
+           - Threshold: 0.65 ensures mostly the star and ornaments glow.
+           - Radius: 0.4 keeps it crisp.
         */}
         <Bloom 
             luminanceThreshold={0.65} 

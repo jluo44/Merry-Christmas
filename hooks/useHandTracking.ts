@@ -13,6 +13,7 @@ export const useHandTracking = (videoRef: React.RefObject<HTMLVideoElement>) => 
   const [loading, setLoading] = useState(true);
   const handLandmarkerRef = useRef<HandLandmarker | null>(null);
   const requestRef = useRef<number>();
+  const lastUiUpdateRef = useRef<number>(0);
 
   // Use a ref for state to avoid re-renders in the tight loop, 
   // but expose a state for the UI updates if needed.
@@ -79,9 +80,9 @@ export const useHandTracking = (videoRef: React.RefObject<HTMLVideoElement>) => 
           avgDist /= tips.length;
           
           // Heuristic: Open palm ~ 0.3-0.4, Fist ~ 0.1-0.15. 
-          // We normalize this to 0 (Open) - 1 (Fist)
-          const minOpen = 0.15;
-          const maxOpen = 0.35;
+          // Tune these for easier triggering
+          const minOpen = 0.12; 
+          const maxOpen = 0.38; 
           let collapse = 1 - (Math.max(minOpen, Math.min(maxOpen, avgDist)) - minOpen) / (maxOpen - minOpen);
           
           // 2. Rotation (Hand position X)
@@ -115,8 +116,15 @@ export const useHandTracking = (videoRef: React.RefObject<HTMLVideoElement>) => 
            };
         }
         
-        // Update state less frequently for UI if needed, or just use ref for animation loop
-        setGestureState({...gestureRef.current});
+        // PERFORMANCE OPTIMIZATION:
+        // Update the React State (which triggers UI re-renders) only at ~10fps (every 100ms).
+        // The 3D scene reads directly from gestureRef.current at 60fps, so animation remains smooth
+        // while minimizing React overhead.
+        const now = performance.now();
+        if (now - lastUiUpdateRef.current > 100) {
+            setGestureState({...gestureRef.current});
+            lastUiUpdateRef.current = now;
+        }
       }
       requestRef.current = requestAnimationFrame(loop);
     };

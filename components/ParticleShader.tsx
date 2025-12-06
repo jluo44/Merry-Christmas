@@ -55,13 +55,15 @@ const vertexShader = `
     // Reduce size when collapsed to prevent solid white blob
     dynamicSize *= mix(1.0, 0.4, uCollapse);
 
-    gl_PointSize = dynamicSize * (350.0 / max(1.0, dist));
+    // Calc point size with clamp to prevent infinity/black spots on very close particles
+    float perspectiveSize = dynamicSize * (350.0 / max(1.0, dist));
+    gl_PointSize = min(150.0, perspectiveSize); // Clamp max size
+    
     gl_Position = projectionMatrix * mvPosition;
 
     // ALPHA LOGIC
-    // Base alpha reduced to 0.6 (from 0.9) to prevent whiteout overlap.
-    // Collapsed alpha drastically reduced to 0.05 to maintain detail in the core.
-    vAlpha = mix(0.6, 0.05, uCollapse);
+    // Base alpha reduced to 0.55 to prevent whiteout overlap.
+    vAlpha = mix(0.55, 0.05, uCollapse);
   }
 `;
 
@@ -80,8 +82,6 @@ const fragmentShader = `
     if (ll > 0.5) discard;
 
     // Softness:
-    // smoothstep(0.5, 0.1) creates a very soft radial gradient.
-    // This removes hard edges which can look artificial.
     float strength = smoothstep(0.5, 0.1, ll);
 
     vec3 finalColor = vColor;
