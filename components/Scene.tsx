@@ -34,11 +34,13 @@ const Particles = ({ gestureRef, shape, color }: SceneProps) => {
 
     if (shape === 'tree') {
       // 1. TREE BODY
-      // Use full count for the tree, no star reservation
+      // Use full count for the tree
       for (let i = 0; i < count; i++) {
         // Standard cone distribution
-        // CLIPPED HEIGHT: Avoid exact top tip (y=5) to prevent singularity
-        const y = Math.random() * 9.5 - 5.0; // -5.0 to 4.5
+        // HEIGHT ADJUSTMENT: Truncate top (max 3.5 instead of 4.5/5.0) 
+        // to avoid the pointy "star" look at the top.
+        const y = Math.random() * 8.5 - 5.0; // -5.0 to 3.5
+        
         // Radius calculation
         const radius = (5 - y) * 0.45;
         const angle = i * 0.5; // Spiral
@@ -108,7 +110,7 @@ const Particles = ({ gestureRef, shape, color }: SceneProps) => {
 
     if (materialRef.current) {
         materialRef.current.uniforms.uTime.value = clock.getElapsedTime();
-        // Faster lerp for responsiveness (0.1 -> 0.2)
+        // Faster lerp for responsiveness
         materialRef.current.uniforms.uCollapse.value = THREE.MathUtils.lerp(
             materialRef.current.uniforms.uCollapse.value, 
             collapseFactor, 
@@ -123,7 +125,7 @@ const Particles = ({ gestureRef, shape, color }: SceneProps) => {
 
     if (meshRef.current) {
         const targetRot = rotationX * 1.5;
-        // Faster rotation lerp (0.05 -> 0.12)
+        // Faster rotation lerp
         meshRef.current.rotation.y = THREE.MathUtils.lerp(
             meshRef.current.rotation.y, 
             targetRot, 
@@ -180,8 +182,8 @@ export const Experience = (props: SceneProps) => {
       
       <EffectComposer disableNormalPass>
         {/* 
-           Bloom Logic Update:
-           - Threshold: 0.65 ensures mostly the star and ornaments glow.
+           Bloom Logic:
+           - Threshold: 0.65 ensures mostly the ornaments glow.
            - Radius: 0.4 keeps it crisp.
         */}
         <Bloom 

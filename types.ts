@@ -1,4 +1,4 @@
-export type ParticleShape = 'tree' | 'star' | 'sphere' | 'flower';
+export type ParticleShape = 'tree' | 'sphere' | 'flower';
 
 export interface GestureState {
   isHandDetected: boolean;

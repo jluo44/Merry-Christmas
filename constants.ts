@@ -2,7 +2,6 @@ import { ParticleShape } from "./types";
 
 export const SHAPES: { id: ParticleShape; label: string }[] = [
   { id: 'tree', label: 'Evergreen' },
-  { id: 'star', label: 'Nova Star' },
   { id: 'flower', label: 'Lotus' },
   { id: 'sphere', label: 'Galaxy' },
 ];
